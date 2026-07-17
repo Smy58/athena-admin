@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import scheduleApi from '../api/schedule'
+import { toDateInputValue, formatDate, formatWeekday } from '../utils/date'
 
 const items = ref([])
 const loading = ref(true)
@@ -9,7 +10,7 @@ const formOpen = ref(false)
 const editingId = ref(null)
 const saving = ref(false)
 
-const emptyForm = () => ({ day: '', date: '', name: '', meta: '', typeLabel: '' })
+const emptyForm = () => ({ date: '', name: '', meta: '', typeLabel: '' })
 const form = ref(emptyForm())
 
 async function load() {
@@ -29,7 +30,7 @@ function openCreate() {
 
 function openEdit(h) {
   editingId.value = h.id
-  form.value = { day: h.day, date: h.date, name: h.name, meta: h.meta, typeLabel: h.typeLabel }
+  form.value = { date: toDateInputValue(h.date), name: h.name, meta: h.meta, typeLabel: h.typeLabel }
   formOpen.value = true
 }
 
@@ -76,10 +77,7 @@ onMounted(load)
     <div v-if="formOpen" class="auth-card" style="max-width: 520px; margin: 0 auto 1.5rem">
       <div v-if="error" class="alert alert-err">{{ error }}</div>
       <div class="field"><label>Название</label><input v-model="form.name" /></div>
-      <div class="grid" style="grid-template-columns: 1fr 1fr">
-        <div class="field"><label>День недели</label><input v-model="form.day" placeholder="СБ" /></div>
-        <div class="field"><label>Дата</label><input v-model="form.date" placeholder="5 июл" /></div>
-      </div>
+      <div class="field"><label>Дата</label><input v-model="form.date" type="date" /></div>
       <div class="field"><label>Тип</label><input v-model="form.typeLabel" placeholder="Кампейн / Ваншот / Ивент" /></div>
       <div class="field"><label>Детали</label><input v-model="form.meta" placeholder="Мастер: Арман · 18:00 · завершён" /></div>
       <button class="btn btn-primary" style="width: 100%; justify-content: center" :disabled="saving" @click="submit">
@@ -105,7 +103,7 @@ onMounted(load)
             <td style="color: var(--t)">{{ h.name }}</td>
             <td>{{ h.typeLabel }}</td>
             <td>{{ h.meta }}</td>
-            <td>{{ h.day }} {{ h.date }}</td>
+            <td>{{ formatWeekday(h.date) }} {{ formatDate(h.date, { withYear: true }) }}</td>
             <td style="white-space: nowrap">
               <button class="btn btn-outline btn-sm" @click="openEdit(h)">Изменить</button>
               <button class="btn btn-danger btn-sm" style="margin-left: 0.4rem" @click="remove(h.id)">Удалить</button>

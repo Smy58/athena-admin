@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import scheduleApi from '../api/schedule'
 import usersApi from '../api/users'
+import { toDateInputValue, formatDate } from '../utils/date'
 
 const items = ref([])
 const roster = ref([])
@@ -63,7 +64,7 @@ function openCreate() {
 
 function openEdit(g) {
   editingId.value = g.id
-  form.value = { ...g }
+  form.value = { ...g, date: toDateInputValue(g.date) }
   formOpen.value = true
 }
 
@@ -164,7 +165,7 @@ onMounted(load)
         <div class="field"><label>Иконка мастера</label><input v-model="form.masterIcon" /></div>
       </div>
       <div class="grid" style="grid-template-columns: 1fr 1fr 1fr">
-        <div class="field"><label>Дата</label><input v-model="form.date" placeholder="12 июля" /></div>
+        <div class="field"><label>Дата</label><input v-model="form.date" type="date" /></div>
         <div class="field"><label>Начало</label><input v-model="form.startTime" placeholder="18:00" /></div>
         <div class="field"><label>Конец</label><input v-model="form.endTime" placeholder="22:00" /></div>
       </div>
@@ -209,7 +210,7 @@ onMounted(load)
           <tr v-for="g in items" :key="g.id">
             <td style="color: var(--t)">{{ g.title }}</td>
             <td>{{ g.masterIcon }} {{ g.master }}</td>
-            <td>{{ g.date }} · {{ g.startTime }}–{{ g.endTime }}</td>
+            <td>{{ formatDate(g.date, { withYear: true }) }} · {{ g.startTime }}–{{ g.endTime }}</td>
             <td>{{ g.bookedSeats }} / {{ g.totalSeats }}</td>
             <td>{{ g.price ? g.price + ' ' + g.currency : 'Бесплатно' }}</td>
             <td style="white-space: nowrap">
