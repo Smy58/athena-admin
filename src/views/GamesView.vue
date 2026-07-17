@@ -24,7 +24,6 @@ const emptyForm = () => ({
   levelMax: null,
   forBeginners: false,
   totalSeats: 6,
-  bookedSeats: 0,
   price: 0,
   currency: '₸',
   shortDescription: '',
@@ -76,12 +75,12 @@ async function submit() {
   }
   saving.value = true
   try {
+    const { bookedSeats: _bookedSeats, signups: _signups, ...formFields } = form.value
     const payload = {
-      ...form.value,
+      ...formFields,
       levelMin: form.value.levelMin === '' ? null : Number(form.value.levelMin) || null,
       levelMax: form.value.levelMax === '' ? null : Number(form.value.levelMax) || null,
       totalSeats: Number(form.value.totalSeats) || 0,
-      bookedSeats: Number(form.value.bookedSeats) || 0,
       price: Number(form.value.price) || 0,
     }
     if (editingId.value) {
@@ -177,10 +176,7 @@ onMounted(load)
         <div class="field"><label>Мин. уровень</label><input v-model="form.levelMin" type="number" /></div>
         <div class="field"><label>Макс. уровень</label><input v-model="form.levelMax" type="number" /></div>
       </div>
-      <div class="grid" style="grid-template-columns: 1fr 1fr">
-        <div class="field"><label>Всего мест</label><input v-model.number="form.totalSeats" type="number" /></div>
-        <div class="field"><label>Занято мест</label><input v-model.number="form.bookedSeats" type="number" /></div>
-      </div>
+      <div class="field"><label>Всего мест</label><input v-model.number="form.totalSeats" type="number" /></div>
       <div class="grid" style="grid-template-columns: 1fr 1fr">
         <div class="field"><label>Цена</label><input v-model.number="form.price" type="number" /></div>
         <div class="field"><label>Валюта</label><input v-model="form.currency" /></div>
