@@ -10,6 +10,8 @@ const allCards = [
   { to: '/faq', icon: '❓', title: 'FAQ', sub: 'Вопросы и ответы на сайте', roles: ['ADMIN'] },
   { to: '/masters', icon: '🧙', title: 'Мастера', sub: 'Профили мастеров клуба', roles: ['ADMIN'] },
   { to: '/guild', icon: '🏛️', title: 'Гильдии', sub: 'Описания и ранги контрактов', roles: ['ADMIN'] },
+  { to: '/users', icon: '👥', title: 'Игроки', sub: 'Участники клуба', roles: ['ADMIN'] },
+  { to: '/admin-users', icon: '🔑', title: 'Аккаунты', sub: 'Админы и мастера в системе', roles: ['ADMIN'] },
 ]
 
 const cards = computed(() => allCards.filter((c) => c.roles.includes(auth.user?.role)))
