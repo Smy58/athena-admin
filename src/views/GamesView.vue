@@ -1,8 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import scheduleApi from '../api/schedule'
+import usersApi from '../api/users'
 
 const items = ref([])
+const roster = ref([])
 const loading = ref(true)
 const error = ref('')
 const formOpen = ref(false)
@@ -30,10 +32,25 @@ const emptyForm = () => ({
 })
 const form = ref(emptyForm())
 
+const signupsGame = ref(null)
+const selectedPlayerId = ref('')
+const modalError = ref('')
+const modalSaving = ref(false)
+
+const availablePlayers = computed(() => {
+  if (!signupsGame.value) return []
+  const signedUpIds = new Set(signupsGame.value.signups.map((s) => s.user.id))
+  return roster.value.filter((u) => !signedUpIds.has(u.id))
+})
+const isFull = computed(() => signupsGame.value && signupsGame.value.bookedSeats >= signupsGame.value.totalSeats)
+
 async function load() {
   loading.value = true
   try {
     items.value = await scheduleApi.games()
+    if (signupsGame.value) {
+      signupsGame.value = items.value.find((g) => g.id === signupsGame.value.id) ?? null
+    }
   } finally {
     loading.value = false
   }
@@ -87,14 +104,42 @@ async function remove(id) {
   await load()
 }
 
-async function kick(gameId, userId, name) {
-  if (!confirm(`Убрать «${name}» из записавшихся?`)) return
-  error.value = ''
+async function openSignups(game) {
+  modalError.value = ''
+  selectedPlayerId.value = ''
+  signupsGame.value = game
+  if (roster.value.length === 0) {
+    roster.value = await usersApi.roster()
+  }
+}
+
+function closeSignups() {
+  signupsGame.value = null
+}
+
+async function addPlayer() {
+  if (!selectedPlayerId.value) return
+  modalError.value = ''
+  modalSaving.value = true
   try {
-    await scheduleApi.removeSignup(gameId, userId)
+    await scheduleApi.addSignup(signupsGame.value.id, selectedPlayerId.value)
+    selectedPlayerId.value = ''
     await load()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Не удалось убрать запись'
+    modalError.value = e.response?.data?.message || 'Не удалось добавить игрока'
+  } finally {
+    modalSaving.value = false
+  }
+}
+
+async function removePlayer(userId, name) {
+  if (!confirm(`Убрать «${name}» из записавшихся?`)) return
+  modalError.value = ''
+  try {
+    await scheduleApi.removeSignup(signupsGame.value.id, userId)
+    await load()
+  } catch (e) {
+    modalError.value = e.response?.data?.message || 'Не удалось убрать запись'
   }
 }
 
@@ -161,7 +206,6 @@ onMounted(load)
             <th>Дата</th>
             <th>Места</th>
             <th>Цена</th>
-            <th>Записались</th>
             <th></th>
           </tr>
         </thead>
@@ -172,33 +216,50 @@ onMounted(load)
             <td>{{ g.date }} · {{ g.startTime }}–{{ g.endTime }}</td>
             <td>{{ g.bookedSeats }} / {{ g.totalSeats }}</td>
             <td>{{ g.price ? g.price + ' ' + g.currency : 'Бесплатно' }}</td>
-            <td style="min-width: 180px">
-              <span v-if="!g.signups?.length" style="color: var(--t3)">—</span>
-              <div v-else style="display: flex; flex-wrap: wrap; gap: 0.3rem">
-                <span
-                  v-for="s in g.signups"
-                  :key="s.id"
-                  class="badge"
-                  style="display: inline-flex; align-items: center; gap: 0.35rem"
-                >
-                  {{ s.user.name }}
-                  <button
-                    style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 0.75rem; line-height: 1"
-                    title="Убрать из записавшихся"
-                    @click="kick(g.id, s.user.id, s.user.name)"
-                  >
-                    ✕
-                  </button>
-                </span>
-              </div>
-            </td>
             <td style="white-space: nowrap">
-              <button class="btn btn-outline btn-sm" @click="openEdit(g)">Изменить</button>
-              <button class="btn btn-danger btn-sm" style="margin-left: 0.4rem" @click="remove(g.id)">Удалить</button>
+              <button class="btn btn-outline btn-sm" title="Записавшиеся игроки" @click="openSignups(g)">👥</button>
+              <button class="btn btn-outline btn-sm" style="margin-left: 0.4rem" title="Настройки игры" @click="openEdit(g)">⚙️</button>
+              <button class="btn btn-danger btn-sm" style="margin-left: 0.4rem" title="Удалить игру" @click="remove(g.id)">🗑️</button>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div v-if="signupsGame" style="position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem" @click.self="closeSignups">
+      <div class="auth-card" style="max-width: 480px; width: 100%; margin: 0; max-height: 85vh; overflow-y: auto">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem">
+          <div>
+            <div class="title-display" style="font-size: 1.05rem">{{ signupsGame.title }}</div>
+            <div style="font-size: 0.78rem; color: var(--t2); margin-top: 0.2rem">{{ signupsGame.bookedSeats }} / {{ signupsGame.totalSeats }} мест занято</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" @click="closeSignups">✕</button>
+        </div>
+
+        <div v-if="modalError" class="alert alert-err">{{ modalError }}</div>
+
+        <div v-if="signupsGame.signups.length === 0" class="empty-state" style="padding: 1.5rem">Пока никто не записался</div>
+        <div v-else style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem">
+          <div
+            v-for="s in signupsGame.signups"
+            :key="s.id"
+            style="display: flex; align-items: center; justify-content: space-between; background: var(--bg2); border: 1px solid var(--b); border-radius: var(--r); padding: 0.6rem 0.85rem"
+          >
+            <span style="font-size: 0.85rem">{{ s.user.name }}</span>
+            <button class="btn btn-danger btn-sm" @click="removePlayer(s.user.id, s.user.name)">Убрать</button>
+          </div>
+        </div>
+
+        <div class="title-display" style="font-size: 0.8rem; margin-bottom: 0.6rem">Добавить игрока</div>
+        <div v-if="isFull" style="font-size: 0.8rem; color: var(--t2)">Свободных мест не осталось.</div>
+        <div v-else style="display: flex; gap: 0.5rem">
+          <select v-model="selectedPlayerId" style="flex: 1; background: var(--bg3); border: 1px solid var(--b); border-radius: var(--r); padding: 0.55rem; color: var(--t)">
+            <option value="" disabled>Выбери игрока...</option>
+            <option v-for="u in availablePlayers" :key="u.id" :value="u.id">{{ u.name }}</option>
+          </select>
+          <button class="btn btn-primary btn-sm" :disabled="!selectedPlayerId || modalSaving" @click="addPlayer">Добавить</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

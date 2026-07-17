@@ -6,6 +6,7 @@ export default {
   createGame: (data) => client.post('/schedule/games', data).then((r) => r.data),
   updateGame: (id, data) => client.patch(`/schedule/games/${id}`, data).then((r) => r.data),
   removeGame: (id) => client.delete(`/schedule/games/${id}`).then((r) => r.data),
+  addSignup: (gameId, userId) => client.post(`/schedule/games/${gameId}/signups`, { userId }).then((r) => r.data),
   removeSignup: (gameId, userId) => client.delete(`/schedule/games/${gameId}/signups/${userId}`).then((r) => r.data),
   history: () => client.get('/schedule/history').then((r) => r.data),
   createHistory: (data) => client.post('/schedule/history', data).then((r) => r.data),
