@@ -15,6 +15,7 @@ const allLinks = [
   { to: '/faq', label: '❓ FAQ', roles: ['ADMIN'] },
   { to: '/masters', label: '🧙 Мастера', roles: ['ADMIN'] },
   { to: '/guild', label: '🏛️ Гильдии', roles: ['ADMIN'] },
+  { to: '/shop', label: '🛍️ Магазин', roles: ['ADMIN'] },
   { to: '/users', label: '👥 Игроки', roles: ['ADMIN'] },
   { to: '/admin-users', label: '🔑 Аккаунты', roles: ['ADMIN'] },
 ]
