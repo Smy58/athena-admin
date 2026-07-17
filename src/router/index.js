@@ -52,6 +52,18 @@ const routes = [
     meta: { requiresAuth: true, roles: ['ADMIN'] },
   },
   {
+    path: '/shop/titles',
+    name: 'shop-titles',
+    component: () => import('../views/ShopTitlesView.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN'] },
+  },
+  {
+    path: '/shop/sections/:id',
+    name: 'shop-section',
+    component: () => import('../views/ShopSectionView.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN'] },
+  },
+  {
     path: '/users',
     name: 'users',
     component: () => import('../views/UsersView.vue'),
