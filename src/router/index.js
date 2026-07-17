@@ -34,6 +34,12 @@ const routes = [
     meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] },
   },
   {
+    path: '/quests',
+    name: 'quests',
+    component: () => import('../views/QuestsView.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] },
+  },
+  {
     path: '/guild',
     name: 'guild',
     component: () => import('../views/GuildView.vue'),

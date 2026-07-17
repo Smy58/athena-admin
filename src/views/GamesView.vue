@@ -87,6 +87,17 @@ async function remove(id) {
   await load()
 }
 
+async function kick(gameId, userId, name) {
+  if (!confirm(`Убрать «${name}» из записавшихся?`)) return
+  error.value = ''
+  try {
+    await scheduleApi.removeSignup(gameId, userId)
+    await load()
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Не удалось убрать запись'
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -98,6 +109,8 @@ onMounted(load)
         {{ formOpen ? 'Отменить' : '+ Добавить игру' }}
       </button>
     </div>
+
+    <div v-if="error && !formOpen" class="alert alert-err">{{ error }}</div>
 
     <div v-if="formOpen" class="auth-card" style="max-width: 620px; margin: 0 auto 1.5rem">
       <div v-if="error" class="alert alert-err">{{ error }}</div>
@@ -148,6 +161,7 @@ onMounted(load)
             <th>Дата</th>
             <th>Места</th>
             <th>Цена</th>
+            <th>Записались</th>
             <th></th>
           </tr>
         </thead>
@@ -158,6 +172,26 @@ onMounted(load)
             <td>{{ g.date }} · {{ g.startTime }}–{{ g.endTime }}</td>
             <td>{{ g.bookedSeats }} / {{ g.totalSeats }}</td>
             <td>{{ g.price ? g.price + ' ' + g.currency : 'Бесплатно' }}</td>
+            <td style="min-width: 180px">
+              <span v-if="!g.signups?.length" style="color: var(--t3)">—</span>
+              <div v-else style="display: flex; flex-wrap: wrap; gap: 0.3rem">
+                <span
+                  v-for="s in g.signups"
+                  :key="s.id"
+                  class="badge"
+                  style="display: inline-flex; align-items: center; gap: 0.35rem"
+                >
+                  {{ s.user.name }}
+                  <button
+                    style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 0.75rem; line-height: 1"
+                    title="Убрать из записавшихся"
+                    @click="kick(g.id, s.user.id, s.user.name)"
+                  >
+                    ✕
+                  </button>
+                </span>
+              </div>
+            </td>
             <td style="white-space: nowrap">
               <button class="btn btn-outline btn-sm" @click="openEdit(g)">Изменить</button>
               <button class="btn btn-danger btn-sm" style="margin-left: 0.4rem" @click="remove(g.id)">Удалить</button>

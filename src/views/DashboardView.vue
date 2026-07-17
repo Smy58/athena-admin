@@ -7,6 +7,7 @@ const auth = useAuthStore()
 const allCards = [
   { to: '/games', icon: '📅', title: 'Игры', sub: 'Расписание предстоящих игр', roles: ['ADMIN', 'MASTER'] },
   { to: '/history', icon: '📜', title: 'История', sub: 'Прошедшие игры и ивенты', roles: ['ADMIN', 'MASTER'] },
+  { to: '/quests', icon: '📋', title: 'Задания', sub: 'Доска заданий и записи игроков', roles: ['ADMIN', 'MASTER'] },
   { to: '/faq', icon: '❓', title: 'FAQ', sub: 'Вопросы и ответы на сайте', roles: ['ADMIN'] },
   { to: '/masters', icon: '🧙', title: 'Мастера', sub: 'Профили мастеров клуба', roles: ['ADMIN'] },
   { to: '/guild', icon: '🏛️', title: 'Гильдии', sub: 'Описания и ранги контрактов', roles: ['ADMIN'] },

@@ -11,6 +11,7 @@ const allLinks = [
   { to: '/', label: '🏠 Дашборд', roles: ['ADMIN', 'MASTER'] },
   { to: '/games', label: '📅 Игры', roles: ['ADMIN', 'MASTER'] },
   { to: '/history', label: '📜 История', roles: ['ADMIN', 'MASTER'] },
+  { to: '/quests', label: '📋 Задания', roles: ['ADMIN', 'MASTER'] },
   { to: '/faq', label: '❓ FAQ', roles: ['ADMIN'] },
   { to: '/masters', label: '🧙 Мастера', roles: ['ADMIN'] },
   { to: '/guild', label: '🏛️ Гильдии', roles: ['ADMIN'] },
